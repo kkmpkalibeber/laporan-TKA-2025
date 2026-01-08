@@ -406,7 +406,7 @@
                     
                     <div class="signature">
                         <div class="signature-line"></div>
-                        <p><strong>Fatma Ainie, S.IP., M.M.</strong></p>
+                        <p><strong>Fatma Alrile, S.I.P., M.M.</strong></p>
                         <p>Kepala Sekolah</p>
                     </div>
                 </div>
@@ -475,34 +475,124 @@
             
             csvData.forEach((row, index) => {
                 // Pastikan data yang diperlukan ada
-                if (row['Nama Peserta'] && row['Bahasa Indonesia'] && row['Matematika'] && row['Bahasa Inggris']) {
-                    // Ekstrak nilai numerik dari string (misal: "86.69<br>(Istimewa)" menjadi 86.69)
-                    const extractNumber = (str) => {
-                        if (!str) return 0;
-                        const match = str.toString().match(/(\d+\.?\d*)/);
-                        return match ? parseFloat(match[1]) : 0;
-                    };
+                if (row['Nama Peserta'] && row['Nomor Peserta']) {
+                    // Fungsi untuk mengekstrak nilai dan keterangan dari string
+                    function extractScoreAndRemark(str) {
+                        if (!str || str.trim() === '') {
+                            return { score: 0, remark: '' };
+                        }
+                        
+                        const strValue = str.toString();
+                        
+                        // Cari angka (bisa desimal)
+                        const scoreMatch = strValue.match(/(\d+\.?\d*)/);
+                        const score = scoreMatch ? parseFloat(scoreMatch[1]) : 0;
+                        
+                        // Cari keterangan dalam tanda kurung
+                        const remarkMatch = strValue.match(/\(([^)]+)\)/);
+                        let remark = remarkMatch ? remarkMatch[1] : '';
+                        
+                        // Jika tidak ada keterangan dalam tanda kurung, tentukan berdasarkan nilai
+                        if (!remark) {
+                            if (score >= 80) remark = "Istimewa";
+                            else if (score >= 70) remark = "Baik";
+                            else if (score >= 55) remark = "Memadai";
+                            else remark = "Kurang";
+                        }
+                        
+                        // Koreksi typo "Istimeva" menjadi "Istimewa"
+                        if (remark === "Istimeva") {
+                            remark = "Istimewa";
+                        }
+                        
+                        return { score, remark };
+                    }
                     
-                    // Ekstrak hanya nama mata pelajaran tanpa "Tingkat Lanjut" jika ada
-                    const extractSubject = (str) => {
-                        if (!str) return '';
-                        // Hilangkan "Tingkat Lanjut" dari nama mata pelajaran
-                        return str.replace(/Tingkat Lanjut/g, '').trim();
-                    };
+                    // Proses setiap mata pelajaran
+                    const bahasaIndonesia = extractScoreAndRemark(row['Bahasa Indonesia']);
+                    const matematika = extractScoreAndRemark(row['Matematika']);
+                    const bahasaInggris = extractScoreAndRemark(row['Bahasa Inggris']);
+                    
+                    // Untuk mata pelajaran pilihan, kita perlu memproses nama mapel dan nilainya
+                    let mapelPilihan1 = row['Mapel Pilihan 1'] || '';
+                    let nilaiPilihan1 = extractScoreAndRemark(row['Nilai Pilihan 1'] || row['Nilai'] || '');
+                    
+                    let mapelPilihan2 = row['Mapel Pilihan 2'] || '';
+                    let nilaiPilihan2 = extractScoreAndRemark(row['Nilai Pilihan 2'] || row['Nilai.1'] || '');
+                    
+                    // Jika mapel pilihan tidak ada, coba dari format alternatif
+                    if (!mapelPilihan1 && row['Pilihan 1']) {
+                        mapelPilihan1 = row['Pilihan 1'];
+                    }
+                    
+                    if (!mapelPilihan2 && row['Pilihan 2']) {
+                        mapelPilihan2 = row['Pilihan 2'];
+                    }
+                    
+                    // Proses rata-rata
+                    const rataRataStr = row['RATA-RATA'] || row['Rata-rata Nilai'] || '0';
+                    const rataRataMatch = rataRataStr.toString().match(/(\d+\.?\d*)/);
+                    const rataRata = rataRataMatch ? parseFloat(rataRataMatch[1]) : 0;
+                    
+                    // Proses ranking
+                    const rankingStr = row['RANGKING'] || row['Ranking'] || '';
+                    const rankingMatch = rankingStr.toString().match(/(\d+)/);
+                    const ranking = rankingMatch ? parseInt(rankingMatch[1]) : (index + 1);
                     
                     const student = {
                         id: index + 1,
-                        name: row['Nama Peserta'],
-                        bahasaIndonesia: extractNumber(row['Bahasa Indonesia']),
-                        matematika: extractNumber(row['Matematika']),
-                        bahasaInggris: extractNumber(row['Bahasa Inggris']),
-                        pilihan1: extractSubject(row['Pilihan 1']),
-                        nilaiPilihan1: extractNumber(row['Nilai']), // Nilai untuk Pilihan 1
-                        pilihan2: extractSubject(row['Pilihan 2']),
-                        nilaiPilihan2: extractNumber(row['Nilai.1']), // Nilai untuk Pilihan 2
-                        rataRata: extractNumber(row['RATA-RATA']),
-                        ranking: parseInt(row['RANGKING']) || index + 1
+                        nomorPeserta: row['Nomor Peserta'].toString().trim(),
+                        name: row['Nama Peserta'].toString().trim(),
+                        nisn: row['NISN'] ? row['NISN'].toString().trim() : '328',
+                        // Data mata pelajaran utama
+                        subjects: [
+                            { 
+                                name: "Bahasa Indonesia", 
+                                score: bahasaIndonesia.score, 
+                                remark: bahasaIndonesia.remark 
+                            },
+                            { 
+                                name: "Matematika", 
+                                score: matematika.score, 
+                                remark: matematika.remark 
+                            },
+                            { 
+                                name: "Bahasa Inggris", 
+                                score: bahasaInggris.score, 
+                                remark: bahasaInggris.remark 
+                            }
+                        ],
+                        // Data mata pelajaran pilihan
+                        pilihan1: {
+                            name: mapelPilihan1,
+                            score: nilaiPilihan1.score,
+                            remark: nilaiPilihan1.remark
+                        },
+                        pilihan2: {
+                            name: mapelPilihan2,
+                            score: nilaiPilihan2.score,
+                            remark: nilaiPilihan2.remark
+                        },
+                        rataRata: rataRata,
+                        ranking: ranking
                     };
+                    
+                    // Tambahkan mata pelajaran pilihan ke array subjects jika ada namanya
+                    if (mapelPilihan1 && mapelPilihan1.trim() !== '') {
+                        student.subjects.push({
+                            name: mapelPilihan1,
+                            score: nilaiPilihan1.score,
+                            remark: nilaiPilihan1.remark
+                        });
+                    }
+                    
+                    if (mapelPilihan2 && mapelPilihan2.trim() !== '') {
+                        student.subjects.push({
+                            name: mapelPilihan2,
+                            score: nilaiPilihan2.score,
+                            remark: nilaiPilihan2.remark
+                        });
+                    }
                     
                     studentData.push(student);
                 }
@@ -528,7 +618,7 @@
             studentData.forEach(student => {
                 const option = document.createElement('option');
                 option.value = student.id;
-                option.textContent = `${student.ranking}. ${student.name}`;
+                option.textContent = `${student.ranking}. ${student.name} (No. ${student.nomorPeserta})`;
                 studentSelect.appendChild(option);
             });
         }
@@ -539,7 +629,8 @@
             if (!searchTerm) return null;
             
             return studentData.find(student => 
-                student.name.toLowerCase().includes(searchTerm)
+                student.name.toLowerCase().includes(searchTerm) ||
+                student.nomorPeserta.includes(searchTerm)
             );
         }
 
@@ -562,38 +653,27 @@
             document.getElementById('resultContent').classList.remove('hidden');
             
             // Menampilkan data siswa
-            document.getElementById('studentNumber').textContent = student.id.toString().padStart(3, '0');
+            document.getElementById('studentNumber').textContent = student.nomorPeserta;
             document.getElementById('studentName').textContent = student.name;
+            document.getElementById('nisn').textContent = student.nisn;
             document.getElementById('averageScore').textContent = student.rataRata.toFixed(3);
             
             // Menampilkan nilai mata pelajaran
             const gradesTable = document.getElementById('gradesTable');
             gradesTable.innerHTML = '';
             
-            // Fungsi untuk menentukan keterangan berdasarkan nilai
-            function getKeterangan(nilai) {
-                if (nilai >= 80) return "Istimewa";
-                if (nilai >= 70) return "Baik";
-                if (nilai >= 55) return "Memadai";
-                return "Kurang";
-            }
-            
-            // Data nilai mata pelajaran
-            const subjects = [
-                { name: "Bahasa Indonesia", nilai: student.bahasaIndonesia },
-                { name: "Matematika", nilai: student.matematika },
-                { name: "Bahasa Inggris", nilai: student.bahasaInggris },
-                { name: student.pilihan1, nilai: student.nilaiPilihan1 },
-                { name: student.pilihan2, nilai: student.nilaiPilihan2 }
-            ];
-            
             // Tambahkan baris untuk setiap mata pelajaran
-            subjects.forEach(subject => {
+            student.subjects.forEach(subject => {
+                // Skip jika nama mata pelajaran kosong
+                if (!subject.name || subject.name.trim() === '') {
+                    return;
+                }
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${subject.name}</td>
-                    <td>${subject.nilai.toFixed(2)}</td>
-                    <td>${getKeterangan(subject.nilai)}</td>
+                    <td>${subject.score.toFixed(2)}</td>
+                    <td>${subject.remark}</td>
                 `;
                 gradesTable.appendChild(row);
             });
@@ -601,6 +681,7 @@
             // Tambahkan baris untuk rata-rata
             const avgRow = document.createElement('tr');
             avgRow.style.backgroundColor = '#f0f7fa';
+            avgRow.style.fontWeight = 'bold';
             avgRow.innerHTML = `
                 <td><strong>RATA-RATA</strong></td>
                 <td><strong>${student.rataRata.toFixed(3)}</strong></td>
