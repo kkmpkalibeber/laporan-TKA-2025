@@ -264,17 +264,6 @@
             color: #666;
         }
         
-        .debug-info {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 5px;
-            font-size: 12px;
-            color: #856404;
-            display: none;
-        }
-        
         @media print {
             body {
                 padding: 0;
@@ -341,10 +330,6 @@
             
             <div class="data-info" id="dataInfo">
                 <i class="fas fa-database"></i> Data akan dimuat dari Google Sheets...
-            </div>
-            
-            <div class="debug-info" id="debugInfo">
-                <!-- Debug info akan ditampilkan di sini -->
             </div>
             
             <div class="buttons">
@@ -443,12 +428,10 @@
         // Fungsi untuk memuat data dari Google Sheets
         async function loadDataFromGoogleSheets() {
             const dataInfo = document.getElementById('dataInfo');
-            const debugInfo = document.getElementById('debugInfo');
             const loadBtn = document.getElementById('loadDataBtn');
             
             try {
                 dataInfo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sedang memuat data dari Google Sheets...';
-                debugInfo.innerHTML = '';
                 loadBtn.disabled = true;
                 loadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
                 
@@ -456,18 +439,12 @@
                 const response = await fetch(GOOGLE_SHEETS_URL);
                 const csvText = await response.text();
                 
-                // Debug: tampilkan beberapa baris pertama
-                const firstLines = csvText.split('\n').slice(0, 10).join('\n');
-                debugInfo.innerHTML = `<strong>10 Baris pertama data:</strong><br><pre>${firstLines}</pre>`;
-                debugInfo.style.display = 'block';
-                
-                // Parse CSV menggunakan PapaParse
+                // Parse CSV menggunakan PapaParse - TANPA HEADER karena kita tahu struktur kolomnya
                 Papa.parse(csvText, {
-                    header: true,
+                    header: false, // Tidak menggunakan header, langsung ambil data per kolom
                     skipEmptyLines: true,
                     complete: function(results) {
-                        console.log("Data yang di-parse:", results);
-                        debugInfo.innerHTML += `<br><strong>Header yang ditemukan:</strong> ${Object.keys(results.data[0] || {}).join(', ')}`;
+                        console.log("Data mentah:", results.data);
                         
                         if (results.data && results.data.length > 0) {
                             processStudentData(results.data);
@@ -482,7 +459,6 @@
                     },
                     error: function(error) {
                         dataInfo.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
-                        debugInfo.innerHTML += `<br><strong>Error:</strong> ${error.message}`;
                         loadBtn.disabled = false;
                         loadBtn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> Coba Lagi';
                     }
@@ -495,255 +471,152 @@
             }
         }
 
-        // Fungsi untuk memproses data dari CSV
+        // Fungsi untuk memproses data dari CSV berdasarkan struktur tetap
         function processStudentData(csvData) {
             studentData = [];
-            const debugInfo = document.getElementById('debugInfo');
             
-            csvData.forEach((row, index) => {
-                // Debug: tampilkan baris pertama untuk melihat struktur
-                if (index === 0) {
-                    debugInfo.innerHTML += `<br><strong>Struktur baris pertama:</strong><br>`;
-                    for (const key in row) {
-                        debugInfo.innerHTML += `${key}: "${row[key]}"<br>`;
-                    }
-                }
-                
-                // Cari nama siswa dari berbagai kemungkinan kolom
-                let studentName = '';
-                let nomorPeserta = '';
-                
-                // Cari di semua kolom yang mungkin berisi nama siswa
-                for (const key in row) {
-                    const value = row[key];
-                    if (value && typeof value === 'string') {
-                        // Cari nama siswa (biasanya mengandung spasi dan huruf kapital)
-                        if (value.match(/[A-Z][a-z]+ [A-Z][a-z]+/) && !studentName) {
-                            studentName = value.trim();
-                        }
-                        // Cari nomor peserta (biasanya angka)
-                        if (value.match(/^\d{2,}$/) && !nomorPeserta) {
-                            nomorPeserta = value.trim();
-                        }
-                    }
-                }
-                
-                // Jika tidak ditemukan dengan regex, coba kolom-kolom umum
-                if (!studentName) {
-                    studentName = row['Nama Peserta'] || row['NAMA'] || row['Nama'] || row['Nama Siswa'] || '';
-                }
-                
-                if (!nomorPeserta) {
-                    nomorPeserta = row['Nomor Peserta'] || row['NO'] || row['No'] || row['Nomor'] || (index + 1).toString();
-                }
-                
-                // Jika masih tidak ada nama siswa, skip baris ini
-                if (!studentName.trim()) {
-                    return;
-                }
-                
-                // Fungsi untuk mengekstrak nilai dan keterangan dari string
-                function extractScoreAndRemark(str) {
-                    if (!str || str.trim() === '') {
-                        return { score: 0, remark: 'Kurang' };
-                    }
-                    
-                    const strValue = str.toString();
-                    
-                    // Debug
-                    if (index === 0) {
-                        debugInfo.innerHTML += `<br><strong>Ekstraksi dari:</strong> "${strValue}"<br>`;
-                    }
-                    
-                    // Cari angka (bisa desimal)
-                    const scoreMatch = strValue.match(/(\d+\.?\d*)/);
-                    const score = scoreMatch ? parseFloat(scoreMatch[1]) : 0;
-                    
-                    // Cari keterangan dalam tanda kurung
-                    const remarkMatch = strValue.match(/\(([^)]+)\)/);
-                    let remark = remarkMatch ? remarkMatch[1] : '';
-                    
-                    // Jika tidak ada keterangan dalam tanda kurung, tentukan berdasarkan nilai
-                    if (!remark) {
-                        if (score >= 80) remark = "Istimewa";
-                        else if (score >= 70) remark = "Baik";
-                        else if (score >= 55) remark = "Memadai";
-                        else remark = "Kurang";
-                    }
-                    
-                    // Koreksi typo "Istimeva" menjadi "Istimewa"
-                    if (remark === "Istimeva") {
-                        remark = "Istimewa";
-                    }
-                    
-                    return { score, remark };
-                }
-                
-                // Proses nilai mata pelajaran dari berbagai kemungkinan kolom
-                // Bahasa Indonesia
-                let bahasaIndonesia = extractScoreAndRemark(row['Bahasa Indonesia'] || row['B. Indonesia'] || '');
-                
-                // Matematika
-                let matematika = extractScoreAndRemark(row['Matematika'] || row['MTK'] || '');
-                
-                // Bahasa Inggris
-                let bahasaInggris = extractScoreAndRemark(row['Bahasa Inggris'] || row['B. Inggris'] || '');
-                
-                // Cari mata pelajaran pilihan
-                let mapelPilihan1 = '';
-                let nilaiPilihan1 = { score: 0, remark: 'Kurang' };
-                let mapelPilihan2 = '';
-                let nilaiPilihan2 = { score: 0, remark: 'Kurang' };
-                
-                // Cari kolom yang mungkin berisi mapel pilihan
-                for (const key in row) {
-                    const value = row[key];
-                    if (value && typeof value === 'string') {
-                        // Cari nama mata pelajaran (yang bukan 3 mata pelajaran utama)
-                        if (value.includes('Tingkat Lanjut') || 
-                            value.includes('Pilihan') || 
-                            (value.match(/[A-Za-z ]+/) && 
-                             !value.includes('Bahasa Indonesia') && 
-                             !value.includes('Matematika') && 
-                             !value.includes('Bahasa Inggris') &&
-                             value.length > 5)) {
-                            
-                            // Cek kolom sebelahnya untuk nilai
-                            const allKeys = Object.keys(row);
-                            const keyIndex = allKeys.indexOf(key);
-                            let nextKey = '';
-                            
-                            // Coba cari kolom berikutnya (mungkin berisi nilai)
-                            for (let i = keyIndex + 1; i < Math.min(keyIndex + 3, allKeys.length); i++) {
-                                const testKey = allKeys[i];
-                                const testValue = row[testKey];
-                                if (testValue && testValue.toString().match(/\d+\.?\d*/)) {
-                                    nextKey = testKey;
-                                    break;
-                                }
-                            }
-                            
-                            if (!mapelPilihan1) {
-                                mapelPilihan1 = value;
-                                if (nextKey) {
-                                    nilaiPilihan1 = extractScoreAndRemark(row[nextKey] || '');
-                                }
-                            } else if (!mapelPilihan2) {
-                                mapelPilihan2 = value;
-                                if (nextKey) {
-                                    nilaiPilihan2 = extractScoreAndRemark(row[nextKey] || '');
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // Coba format alternatif untuk pilihan
-                if (!mapelPilihan1) {
-                    mapelPilihan1 = row['Mapel Pilihan 1'] || row['Pilihan 1'] || '';
-                    nilaiPilihan1 = extractScoreAndRemark(row['Nilai Pilihan 1'] || '');
-                }
-                
-                if (!mapelPilihan2) {
-                    mapelPilihan2 = row['Mapel Pilihan 2'] || row['Pilihan 2'] || '';
-                    nilaiPilihan2 = extractScoreAndRemark(row['Nilai Pilihan 2'] || '');
-                }
-                
-                // Proses rata-rata
-                const rataRataStr = row['RATA-RATA'] || row['Rata-rata Nilai'] || row['Rata-rata'] || '0';
-                const rataRataMatch = rataRataStr.toString().match(/(\d+\.?\d*)/);
-                const rataRata = rataRataMatch ? parseFloat(rataRataMatch[1]) : 0;
-                
-                // Proses ranking
-                const rankingStr = row['RANGKING'] || row['Ranking'] || row['RANK'] || '';
-                const rankingMatch = rankingStr.toString().match(/(\d+)/);
-                const ranking = rankingMatch ? parseInt(rankingMatch[1]) : (index + 1);
-                
-                // Proses NISN
-                const nisn = row['NISN'] || '328';
-                
-                const student = {
-                    id: index + 1,
-                    nomorPeserta: nomorPeserta,
-                    name: studentName.trim(),
-                    nisn: nisn.toString().trim(),
-                    // Data mata pelajaran utama
-                    subjects: [
-                        { 
-                            name: "Bahasa Indonesia", 
-                            score: bahasaIndonesia.score, 
-                            remark: bahasaIndonesia.remark 
-                        },
-                        { 
-                            name: "Matematika", 
-                            score: matematika.score, 
-                            remark: matematika.remark 
-                        },
-                        { 
-                            name: "Bahasa Inggris", 
-                            score: bahasaInggris.score, 
-                            remark: bahasaInggris.remark 
-                        }
-                    ],
-                    rataRata: rataRata,
-                    ranking: ranking
-                };
-                
-                // Tambahkan mata pelajaran pilihan jika ada
-                if (mapelPilihan1 && mapelPilihan1.trim() !== '') {
-                    student.subjects.push({
-                        name: mapelPilihan1.trim(),
-                        score: nilaiPilihan1.score,
-                        remark: nilaiPilihan1.remark
-                    });
-                }
-                
-                if (mapelPilihan2 && mapelPilihan2.trim() !== '') {
-                    student.subjects.push({
-                        name: mapelPilihan2.trim(),
-                        score: nilaiPilihan2.score,
-                        remark: nilaiPilihan2.remark
-                    });
-                }
-                
-                studentData.push(student);
-            });
+            // Lewati baris header jika ada (baris pertama)
+            let startRow = 0;
+            if (csvData[0] && csvData[0][0] && (csvData[0][0].includes("Nama") || csvData[0][0].includes("nama"))) {
+                startRow = 1; // Lewati baris header
+            }
             
-            // Jika tidak ada data yang diproses, coba pendekatan lebih fleksibel
-            if (studentData.length === 0 && csvData.length > 0) {
-                debugInfo.innerHTML += `<br><strong>Mencoba pendekatan alternatif...</strong>`;
+            for (let i = startRow; i < csvData.length; i++) {
+                const row = csvData[i];
                 
-                // Coba proses dengan asumsi kolom pertama adalah nomor, kedua nama
-                csvData.forEach((row, index) => {
-                    const keys = Object.keys(row);
-                    if (keys.length >= 2) {
-                        const student = {
-                            id: index + 1,
-                            nomorPeserta: row[keys[0]] || (index + 1).toString(),
-                            name: row[keys[1]] || `Siswa ${index + 1}`,
-                            nisn: '328',
-                            subjects: [],
-                            rataRata: 0,
-                            ranking: index + 1
-                        };
+                // Pastikan ada minimal 10 kolom data (A-J)
+                if (row.length >= 10) {
+                    // Struktur berdasarkan penjelasan Anda:
+                    // A: Nama, B: Bahasa Indonesia, C: Matematika, D: Bahasa Inggris
+                    // E: Nama Mapel Pilihan 1, F: Nilai Mapel Pilihan 1
+                    // G: Nama Mapel Pilihan 2, H: Nilai Mapel Pilihan 2
+                    // I: Rata-rata, J: Rangking
+                    
+                    const studentName = row[0] || `Siswa ${i + 1}`;
+                    
+                    // Fungsi untuk mengekstrak nilai dan keterangan dari string
+                    function extractScoreAndRemark(value) {
+                        if (!value) {
+                            return { score: 0, remark: 'Kurang' };
+                        }
                         
-                        // Coba proses kolom lainnya sebagai nilai
-                        for (let i = 2; i < Math.min(keys.length, 7); i++) {
-                            const key = keys[i];
-                            const value = row[key];
-                            if (value) {
-                                const extracted = extractScoreAndRemark(value);
-                                student.subjects.push({
-                                    name: key,
-                                    score: extracted.score,
-                                    remark: extracted.remark
-                                });
+                        const strValue = value.toString().trim();
+                        
+                        // Cari angka (bisa desimal)
+                        const scoreMatch = strValue.match(/(\d+\.?\d*)/);
+                        const score = scoreMatch ? parseFloat(scoreMatch[1]) : 0;
+                        
+                        // Cari keterangan dalam tanda kurung
+                        const remarkMatch = strValue.match(/\(([^)]+)\)/);
+                        let remark = remarkMatch ? remarkMatch[1] : '';
+                        
+                        // Jika tidak ada keterangan dalam tanda kurung, cari di baris baru
+                        if (!remark) {
+                            // Cari teks setelah newline atau baris baru
+                            const lines = strValue.split('\n');
+                            if (lines.length > 1) {
+                                for (let j = 1; j < lines.length; j++) {
+                                    const line = lines[j].trim();
+                                    if (line && !line.match(/\d+\.?\d*/)) {
+                                        // Hapus tanda kurung jika ada
+                                        remark = line.replace(/[()]/g, '').trim();
+                                        break;
+                                    }
+                                }
                             }
                         }
                         
-                        studentData.push(student);
+                        // Jika masih tidak ada keterangan, tentukan berdasarkan nilai
+                        if (!remark) {
+                            if (score >= 80) remark = "Istimewa";
+                            else if (score >= 70) remark = "Baik";
+                            else if (score >= 55) remark = "Memadai";
+                            else remark = "Kurang";
+                        }
+                        
+                        // Koreksi typo "Istimeva" menjadi "Istimewa"
+                        if (remark === "Istimeva") {
+                            remark = "Istimewa";
+                        }
+                        
+                        return { score, remark };
                     }
-                });
+                    
+                    // Proses nilai untuk setiap mata pelajaran
+                    const bahasaIndonesia = extractScoreAndRemark(row[1]);
+                    const matematika = extractScoreAndRemark(row[2]);
+                    const bahasaInggris = extractScoreAndRemark(row[3]);
+                    
+                    // Mata pelajaran pilihan 1
+                    const mapelPilihan1 = row[4] || '';
+                    const nilaiPilihan1 = extractScoreAndRemark(row[5]);
+                    
+                    // Mata pelajaran pilihan 2
+                    const mapelPilihan2 = row[6] || '';
+                    const nilaiPilihan2 = extractScoreAndRemark(row[7]);
+                    
+                    // Rata-rata
+                    const rataRataStr = row[8] || '0';
+                    const rataRataMatch = rataRataStr.toString().match(/(\d+\.?\d*)/);
+                    const rataRata = rataRataMatch ? parseFloat(rataRataMatch[1]) : 0;
+                    
+                    // Ranking
+                    const rankingStr = row[9] || '0';
+                    const rankingMatch = rankingStr.toString().match(/(\d+)/);
+                    const ranking = rankingMatch ? parseInt(rankingMatch[1]) : (i + 1);
+                    
+                    // Nomor peserta (gunakan nomor urut jika tidak ada)
+                    const nomorPeserta = row[10] || (i + 1).toString().padStart(3, '0');
+                    
+                    // NISN (default 328 jika tidak ada)
+                    const nisn = row[11] || '328';
+                    
+                    const student = {
+                        id: i + 1,
+                        nomorPeserta: nomorPeserta,
+                        name: studentName.trim(),
+                        nisn: nisn.toString().trim(),
+                        // Data mata pelajaran
+                        subjects: [
+                            { 
+                                name: "Bahasa Indonesia", 
+                                score: bahasaIndonesia.score, 
+                                remark: bahasaIndonesia.remark 
+                            },
+                            { 
+                                name: "Matematika", 
+                                score: matematika.score, 
+                                remark: matematika.remark 
+                            },
+                            { 
+                                name: "Bahasa Inggris", 
+                                score: bahasaInggris.score, 
+                                remark: bahasaInggris.remark 
+                            }
+                        ],
+                        rataRata: rataRata,
+                        ranking: ranking
+                    };
+                    
+                    // Tambahkan mata pelajaran pilihan jika ada namanya
+                    if (mapelPilihan1 && mapelPilihan1.trim() !== '') {
+                        student.subjects.push({
+                            name: mapelPilihan1.trim(),
+                            score: nilaiPilihan1.score,
+                            remark: nilaiPilihan1.remark
+                        });
+                    }
+                    
+                    if (mapelPilihan2 && mapelPilihan2.trim() !== '') {
+                        student.subjects.push({
+                            name: mapelPilihan2.trim(),
+                            score: nilaiPilihan2.score,
+                            remark: nilaiPilihan2.remark
+                        });
+                    }
+                    
+                    studentData.push(student);
+                }
             }
             
             // Urutkan berdasarkan ranking
