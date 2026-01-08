@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMA TAKHASSUS AL QUR'AN - Laporan Hasil TKA 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #1a5f7a;
+        }
+        
+        .header h1 {
+            color: #1a5f7a;
+            margin-bottom: 5px;
+            font-size: 24px;
+        }
+        
+        .header h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .search-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .search-section h3 {
+            color: #1a5f7a;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .search-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .search-input label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .search-input select, .search-input input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input select:focus, .search-input input:focus {
+            border-color: #1a5f7a;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(26, 95, 122, 0.1);
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: #1a5f7a;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #154b60;
+        }
+        
+        .btn-secondary {
+            background-color: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e9ecef;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .result-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+        
+        .result-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .result-header h3 {
+            color: #1a5f7a;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        
+        .student-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-item {
+            margin-bottom: 10px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .grades-table th {
+            background-color: #1a5f7a;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .grades-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .grades-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .grades-table tr:hover {
+            background-color: #f0f7fa;
+        }
+        
+        .footer-info {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .date-info {
+            margin-bottom: 40px;
+            font-style: italic;
+            color: #666;
+        }
+        
+        .signature {
+            text-align: center;
+            margin-top: 60px;
+        }
+        
+        .signature-line {
+            margin-top: 80px;
+            border-top: 1px solid #333;
+            width: 300px;
+            padding-top: 10px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #1a5f7a;
+            font-size: 18px;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .data-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+            
+            .search-section, .buttons {
+                display: none !important;
+            }
+            
+            .result-section {
+                box-shadow: none;
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .student-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-row {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                min-width: 100%;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1>SMA TAKHASSUS AL QUR'AN WONOSOBO</h1>
+        <h2>LAPORAN HASIL TES KEMAMPUAN AKADEMIK (TKA) 2025</h2>
+    </div>
+    
+    <div class="app-container">
+        <div class="search-section">
+            <h3><i class="fas fa-search"></i> PENCARIAN DATA SISWA</h3>
+            
+            <div class="search-row">
+                <div class="search-input">
+                    <label for="studentSelect">Pilih Nama Siswa</label>
+                    <select id="studentSelect">
+                        <option value="">-- Data belum dimuat --</option>
+                    </select>
+                </div>
+                
+                <div class="search-input">
+                    <label for="searchInput">Cari Nama Siswa</label>
+                    <input type="text" id="searchInput" placeholder="Ketik nama siswa...">
+                </div>
+            </div>
+            
+            <div class="data-info" id="dataInfo">
+                <i class="fas fa-database"></i> Data akan dimuat dari Google Sheets...
+            </div>
+            
+            <div class="buttons">
+                <button id="loadDataBtn" class="btn btn-success">
+                    <i class="fas fa-cloud-download-alt"></i> Muat Data dari Google Sheets
+                </button>
+                <button id="searchBtn" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Tampilkan Hasil
+                </button>
+                <button id="printBtn" class="btn btn-secondary">
+                    <i class="fas fa-print"></i> Cetak PDF
+                </button>
+                <button id="resetBtn" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i> Reset Pencarian
+                </button>
+            </div>
+        </div>
+        
+        <div class="result-section hidden" id="resultSection">
+            <div class="result-header">
+                <h3>HASIL TES KEMAMPUAN AKADEMIK (TKA) 2025</h3>
+                <p>SMA TAKHASSUS AL QUR'AN WONOSOBO</p>
+            </div>
+            
+            <div id="loading" class="loading hidden">
+                <i class="fas fa-spinner fa-spin"></i> Memuat data siswa...
+            </div>
+            
+            <div id="noData" class="no-data hidden">
+                <i class="fas fa-exclamation-circle"></i> Data tidak ditemukan. Silakan pilih siswa lain.
+            </div>
+            
+            <div id="resultContent" class="hidden">
+                <div class="student-info">
+                    <div>
+                        <div class="info-item">
+                            <div class="info-label">Nomor Peserta</div>
+                            <div class="info-value" id="studentNumber">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">NISN</div>
+                            <div class="info-value" id="nisn">328</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-item">
+                            <div class="info-label">Nama Peserta</div>
+                            <div class="info-value" id="studentName">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Rata-rata Nilai</div>
+                            <div class="info-value" id="averageScore">-</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Mata Pelajaran</th>
+                            <th>Nilai</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradesTable">
+                        <!-- Data nilai akan dimuat di sini -->
+                    </tbody>
+                </table>
+                
+                <div class="footer-info">
+                    <div class="date-info" id="currentDate">
+                        Wonosobo, <span id="datePlaceholder"></span>
+                    </div>
+                    
+                    <div class="signature">
+                        <div class="signature-line"></div>
+                        <p><strong>Fatma Ainie, S.IP., M.M.</strong></p>
+                        <p>Kepala Sekolah</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script>
+        // URL Google Sheets yang sudah dipublish sebagai CSV
+        const GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBH_OTSL8zR_yFpKN5GR_DwzFF8Z9XEGmwmZQvTazrEndlApyu9qaM2mMHgvZrWQ/pub?output=csv";
+        
+        // Array untuk menyimpan data siswa
+        let studentData = [];
+        let isDataLoaded = false;
+
+        // Fungsi untuk memuat data dari Google Sheets
+        async function loadDataFromGoogleSheets() {
+            const dataInfo = document.getElementById('dataInfo');
+            const loadBtn = document.getElementById('loadDataBtn');
+            
+            try {
+                dataInfo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sedang memuat data dari Google Sheets...';
+                loadBtn.disabled = true;
+                loadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
+                
+                // Menggunakan PapaParse untuk membaca CSV dari URL
+                const response = await fetch(GOOGLE_SHEETS_URL);
+                const csvText = await response.text();
+                
+                // Parse CSV menggunakan PapaParse
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        if (results.data && results.data.length > 0) {
+                            processStudentData(results.data);
+                            dataInfo.innerHTML = `<i class="fas fa-check-circle"></i> Data berhasil dimuat: ${studentData.length} siswa ditemukan`;
+                            loadBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Muat Ulang Data';
+                            loadBtn.disabled = false;
+                            isDataLoaded = true;
+                        } else {
+                            dataInfo.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Tidak ada data ditemukan dalam Google Sheets';
+                            loadBtn.disabled = false;
+                        }
+                    },
+                    error: function(error) {
+                        dataInfo.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
+                        loadBtn.disabled = false;
+                        loadBtn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> Coba Lagi';
+                    }
+                });
+                
+            } catch (error) {
+                dataInfo.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Gagal memuat data: ${error.message}`;
+                loadBtn.disabled = false;
+                loadBtn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> Coba Lagi';
+            }
+        }
+
+        // Fungsi untuk memproses data dari CSV
+        function processStudentData(csvData) {
+            studentData = [];
+            
+            csvData.forEach((row, index) => {
+                // Pastikan data yang diperlukan ada
+                if (row['Nama Peserta'] && row['Bahasa Indonesia'] && row['Matematika'] && row['Bahasa Inggris']) {
+                    // Ekstrak nilai numerik dari string (misal: "86.69<br>(Istimewa)" menjadi 86.69)
+                    const extractNumber = (str) => {
+                        if (!str) return 0;
+                        const match = str.toString().match(/(\d+\.?\d*)/);
+                        return match ? parseFloat(match[1]) : 0;
+                    };
+                    
+                    // Ekstrak hanya nama mata pelajaran tanpa "Tingkat Lanjut" jika ada
+                    const extractSubject = (str) => {
+                        if (!str) return '';
+                        // Hilangkan "Tingkat Lanjut" dari nama mata pelajaran
+                        return str.replace(/Tingkat Lanjut/g, '').trim();
+                    };
+                    
+                    const student = {
+                        id: index + 1,
+                        name: row['Nama Peserta'],
+                        bahasaIndonesia: extractNumber(row['Bahasa Indonesia']),
+                        matematika: extractNumber(row['Matematika']),
+                        bahasaInggris: extractNumber(row['Bahasa Inggris']),
+                        pilihan1: extractSubject(row['Pilihan 1']),
+                        nilaiPilihan1: extractNumber(row['Nilai']), // Nilai untuk Pilihan 1
+                        pilihan2: extractSubject(row['Pilihan 2']),
+                        nilaiPilihan2: extractNumber(row['Nilai.1']), // Nilai untuk Pilihan 2
+                        rataRata: extractNumber(row['RATA-RATA']),
+                        ranking: parseInt(row['RANGKING']) || index + 1
+                    };
+                    
+                    studentData.push(student);
+                }
+            });
+            
+            // Urutkan berdasarkan ranking
+            studentData.sort((a, b) => a.ranking - b.ranking);
+            
+            // Update ID berdasarkan urutan ranking
+            studentData.forEach((student, index) => {
+                student.id = index + 1;
+            });
+            
+            // Isi dropdown dengan nama siswa
+            populateStudentSelect();
+        }
+
+        // Fungsi untuk mengisi dropdown dengan nama siswa
+        function populateStudentSelect() {
+            const studentSelect = document.getElementById('studentSelect');
+            studentSelect.innerHTML = '<option value="">-- Pilih Nama Siswa --</option>';
+            
+            studentData.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.id;
+                option.textContent = `${student.ranking}. ${student.name}`;
+                studentSelect.appendChild(option);
+            });
+        }
+
+        // Fungsi untuk mencari siswa berdasarkan nama
+        function searchStudentByName(name) {
+            const searchTerm = name.toLowerCase().trim();
+            if (!searchTerm) return null;
+            
+            return studentData.find(student => 
+                student.name.toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // Fungsi untuk mendapatkan siswa berdasarkan ID
+        function getStudentById(id) {
+            return studentData.find(student => student.id === parseInt(id));
+        }
+
+        // Fungsi untuk menampilkan data siswa
+        function displayStudentData(student) {
+            if (!student) {
+                document.getElementById('noData').classList.remove('hidden');
+                document.getElementById('resultContent').classList.add('hidden');
+                document.getElementById('loading').classList.add('hidden');
+                return;
+            }
+            
+            document.getElementById('noData').classList.add('hidden');
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('resultContent').classList.remove('hidden');
+            
+            // Menampilkan data siswa
+            document.getElementById('studentNumber').textContent = student.id.toString().padStart(3, '0');
+            document.getElementById('studentName').textContent = student.name;
+            document.getElementById('averageScore').textContent = student.rataRata.toFixed(3);
+            
+            // Menampilkan nilai mata pelajaran
+            const gradesTable = document.getElementById('gradesTable');
+            gradesTable.innerHTML = '';
+            
+            // Fungsi untuk menentukan keterangan berdasarkan nilai
+            function getKeterangan(nilai) {
+                if (nilai >= 80) return "Istimewa";
+                if (nilai >= 70) return "Baik";
+                if (nilai >= 55) return "Memadai";
+                return "Kurang";
+            }
+            
+            // Data nilai mata pelajaran
+            const subjects = [
+                { name: "Bahasa Indonesia", nilai: student.bahasaIndonesia },
+                { name: "Matematika", nilai: student.matematika },
+                { name: "Bahasa Inggris", nilai: student.bahasaInggris },
+                { name: student.pilihan1, nilai: student.nilaiPilihan1 },
+                { name: student.pilihan2, nilai: student.nilaiPilihan2 }
+            ];
+            
+            // Tambahkan baris untuk setiap mata pelajaran
+            subjects.forEach(subject => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${subject.name}</td>
+                    <td>${subject.nilai.toFixed(2)}</td>
+                    <td>${getKeterangan(subject.nilai)}</td>
+                `;
+                gradesTable.appendChild(row);
+            });
+            
+            // Tambahkan baris untuk rata-rata
+            const avgRow = document.createElement('tr');
+            avgRow.style.backgroundColor = '#f0f7fa';
+            avgRow.innerHTML = `
+                <td><strong>RATA-RATA</strong></td>
+                <td><strong>${student.rataRata.toFixed(3)}</strong></td>
+                <td><strong>RANGKING: ${student.ranking}</strong></td>
+            `;
+            gradesTable.appendChild(avgRow);
+            
+            // Update tanggal
+            updateDate();
+            
+            // Tampilkan section hasil
+            document.getElementById('resultSection').classList.remove('hidden');
+        }
+
+        // Fungsi untuk update tanggal
+        function updateDate() {
+            const now = new Date();
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            const formattedDate = now.toLocaleDateString('id-ID', options);
+            document.getElementById('datePlaceholder').textContent = formattedDate;
+        }
+
+        // Fungsi untuk mencetak ke PDF
+        function printToPDF() {
+            if (!isDataLoaded) {
+                alert('Silakan muat data terlebih dahulu!');
+                return;
+            }
+            
+            const resultSection = document.getElementById('resultSection');
+            
+            // Gunakan html2canvas untuk menangkap elemen sebagai gambar
+            html2canvas(resultSection).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                const imgWidth = 190;
+                const pageHeight = 290;
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 10;
+                
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                const studentName = document.getElementById('studentName').textContent;
+                const fileName = `Laporan_TKA_2025_${studentName.replace(/\s+/g, '_')}.pdf`;
+                pdf.save(fileName);
+            });
+        }
+
+        // Fungsi untuk reset pencarian
+        function resetSearch() {
+            document.getElementById('studentSelect').value = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('resultSection').classList.add('hidden');
+            document.getElementById('noData').classList.add('hidden');
+            document.getElementById('resultContent').classList.add('hidden');
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update tanggal saat ini
+            updateDate();
+            
+            // Event listener untuk tombol muat data
+            document.getElementById('loadDataBtn').addEventListener('click', loadDataFromGoogleSheets);
+            
+            // Event listener untuk tombol cari
+            document.getElementById('searchBtn').addEventListener('click', function() {
+                if (!isDataLoaded) {
+                    alert('Silakan muat data terlebih dahulu dengan menekan tombol "Muat Data dari Google Sheets"');
+                    return;
+                }
+                
+                const studentSelect = document.getElementById('studentSelect');
+                const searchInput = document.getElementById('searchInput');
+                
+                let student = null;
+                
+                if (studentSelect.value) {
+                    student = getStudentById(studentSelect.value);
+                } else if (searchInput.value) {
+                    student = searchStudentByName(searchInput.value);
+                }
+                
+                if (student) {
+                    document.getElementById('loading').classList.remove('hidden');
+                    // Simulasi loading
+                    setTimeout(() => {
+                        displayStudentData(student);
+                    }, 300);
+                } else {
+                    document.getElementById('noData').classList.remove('hidden');
+                    document.getElementById('resultContent').classList.add('hidden');
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('resultSection').classList.remove('hidden');
+                }
+            });
+            
+            // Event listener untuk tombol cetak PDF
+            document.getElementById('printBtn').addEventListener('click', printToPDF);
+            
+            // Event listener untuk tombol reset
+            document.getElementById('resetBtn').addEventListener('click', resetSearch);
+            
+            // Event listener untuk input pencarian langsung
+            document.getElementById('searchInput').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('searchBtn').click();
+                }
+            });
+            
+            // Event listener untuk perubahan pada dropdown
+            document.getElementById('studentSelect').addEventListener('change', function() {
+                if (this.value) {
+                    document.getElementById('searchInput').value = '';
+                    document.getElementById('searchBtn').click();
+                }
+            });
+            
+            // Auto-load data saat halaman dibuka
+            // loadDataFromGoogleSheets();
+        });
+    </script>
+</body>
+</html>
